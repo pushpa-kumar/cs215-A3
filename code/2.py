@@ -14,15 +14,17 @@ class EpanechnikovKDE:
     def epanechnikov_kernel(self, x, xi):
         """Epanechnikov kernel function."""
         i=(x-xi)/self.bandwidth
-        return np.where(np.abs(i) <= 1, (3/4) * (1 - i**2), 0)
+        distance_from_origin = np.linalg.norm(i)
+        if distance_from_origin<=1:
+            return (3/4) * (1 - distance_from_origin**2)
+        return 0
+        # return np.where(np.abs(i) <= 1, (3/4) * (1 - i**2), 0)
         
     def evaluate(self, x):
         """Evaluate the KDE at point x."""
-        n=len(self.data)
-        density=0
-        for x_i in self.data:
-            density+=self.epanechnikov_kernel(x,x_i)
-        return (1/(n*self.bandwidth))*density
+        n = len(self.data)
+        density = np.sum([self.epanechnikov_kernel(x, x_i) for x_i in self.data])
+        return (1 / (n * self.bandwidth)) * density
 
 
 # Load the data from the NPZ file
@@ -39,15 +41,15 @@ kde.fit(data)
 
 x_min,x_max=data[:,0].min(),data[:,0].max()
 y_min,y_max=data[:,1].min(),data[:,1].max()
-x_range=np.linspace(x_min,x_max,50)
-y_range=np.linspace(y_min,y_max,50)
+x_range=np.linspace(x_min,x_max,100)
+y_range=np.linspace(y_min,y_max,100)
 x_grid,y_grid=np.meshgrid(x_range,y_range)
 z_grid = np.zeros((x_grid.shape[0], x_grid.shape[1]))
 for i in range(x_grid.shape[0]):
     for j in range(x_grid.shape[1]):
         x = x_grid[i, j]
         y = y_grid[i, j]
-        z_grid[i, j] = kde.evaluate([x, y])[0]
+        z_grid[i, j] = kde.evaluate([x, y])
 
 fig=plt.figure()
 ax=fig.add_subplot(111,projection='3d')
@@ -58,6 +60,7 @@ ax.set_zlabel('Probability Density')
 plt.title('Estimated Distribution of Transactions')
 save_path = '../images/2/transaction distribution.png' 
 plt.savefig(save_path) 
+# plt.show()
 # TODO: Save the plot 
 
 
