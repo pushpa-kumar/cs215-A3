@@ -36,11 +36,6 @@ kde=EpanechnikovKDE(bandwidth=1.0)
 kde.fit(data)
 
 # TODO: Plot the estimated density in a 3D plot
-# x_vals = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
-# y_vals = np.linspace(min(data[:, 1]), max(data[:, 1]), 100)
-# x,y=np.meshgrid(x_vals,y_vals)
-# z=np.zeros_like(x)
-# for i in range(x.shape[0]):
 
 x_min,x_max=data[:,0].min(),data[:,0].max()
 y_min,y_max=data[:,1].min(),data[:,1].max()
@@ -64,4 +59,5 @@ plt.title('Estimated Distribution of Transactions')
 save_path = '../images/2/transaction distribution.png' 
 plt.savefig(save_path) 
 # TODO: Save the plot 
+
 
