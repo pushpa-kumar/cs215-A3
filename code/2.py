@@ -21,10 +21,15 @@ class EpanechnikovKDE:
         # return np.where(np.abs(i) <= 1, (3/4) * (1 - i**2), 0)
         
     def evaluate(self, x):
-        """Evaluate the KDE at point x."""
+        """Evaluate the KDE at multiple points x.
+        
+        x should be a 2D array where each row is a point (x, y).
+        """
         n = len(self.data)
-        density = np.sum([self.epanechnikov_kernel(x, x_i) for x_i in self.data])
-        return (1 / (n * self.bandwidth)) * density
+        # Compute kernel density for each point in x, summing across all data points
+        densities = np.array([np.sum([self.epanechnikov_kernel(xi, x_i) for x_i in self.data]) for xi in x])
+        return (1 / (n * self.bandwidth)) * densities
+
 
 
 # Load the data from the NPZ file
@@ -41,15 +46,22 @@ kde.fit(data)
 
 x_min,x_max=data[:,0].min(),data[:,0].max()
 y_min,y_max=data[:,1].min(),data[:,1].max()
-x_range=np.linspace(x_min,x_max,100)
-y_range=np.linspace(y_min,y_max,100)
-x_grid,y_grid=np.meshgrid(x_range,y_range)
-z_grid = np.zeros((x_grid.shape[0], x_grid.shape[1]))
-for i in range(x_grid.shape[0]):
-    for j in range(x_grid.shape[1]):
-        x = x_grid[i, j]
-        y = y_grid[i, j]
-        z_grid[i, j] = kde.evaluate([x, y])
+
+x_range = np.linspace(x_min, x_max, 75)
+y_range = np.linspace(y_min, y_max, 75)
+x_grid, y_grid = np.meshgrid(x_range, y_range)
+
+# Create a 2D array of (x, y) coordinate pairs
+xy_stack = np.column_stack([x_grid.ravel(), y_grid.ravel()])
+print(xy_stack.shape)
+
+# Evaluate kde for all (x, y) pairs
+z_values = kde.evaluate(xy_stack)
+
+# Reshape the output to match the shape of x_grid or y_grid
+z_grid = z_values.reshape(x_grid.shape)
+
+
 
 fig=plt.figure()
 ax=fig.add_subplot(111,projection='3d')
